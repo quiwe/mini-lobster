@@ -1,0 +1,32 @@
+{
+  "skills": [
+    {
+      "name": "code-review",
+      "file": "code-review.md"
+    },
+    {
+      "name": "python-expert",
+      "file": "python-expert.md"
+    },
+    {
+      "name": "skills",
+      "file": "skills.md"
+    },
+    {
+      "name": "openclaw-version-monitor",
+      "file": "openclaw-version-monitor.md"
+    },
+    {
+      "name": "python-executor",
+      "file": "python-executor.md"
+    },
+    {
+      "name": "agent-identity",
+      "file": "agent-identity.md"
+    },
+    {
+      "name": "self-improving-agent",
+      "file": "self-improving-agent.md"
+    }
+  ]
+}

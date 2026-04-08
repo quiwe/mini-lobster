@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>SSE Test</title></head>
+<body>
+<h2>Mini-Lobster SSE Debug</h2>
+<div id="log" style="font-family:monospace;font-size:12px;white-space:pre-wrap;background:#111;color:#0f0;padding:10px;max-height:400px;overflow:auto;border-radius:8px"></div>
+<br>
+<button onclick="sendMsg()">发送 hello</button>
+<script>
+const SESSION = 'debug_' + Math.random().toString(36).slice(2);
+const log = document.getElementById('log');
+
+function addLog(msg) {
+    log.textContent += msg + '\n';
+    log.scrollTop = log.scrollHeight;
+}
+
+async function sendMsg() {
+    const msg = 'hello';
+    addLog('=== 发送: ' + msg);
+    const url = '/chat/' + SESSION + '?message=' + encodeURIComponent(msg);
+    addLog('URL: ' + url);
+    try {
+        addLog('fetching...');
+        const resp = await fetch(url);
+        addLog('status: ' + resp.status);
+        addLog('content-type: ' + resp.headers.get('content-type'));
+        if (!resp.body) {
+            addLog('ERROR: resp.body is null - trying resp.text()');
+            const t = await resp.text();
+            addLog('text: ' + t.slice(0, 200));
+            return;
+        }
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = '';
+        let n = 0;
+        let totalText = '';
+        while (true) {
+            const {done, value} = await reader.read();
+            if (done) { addLog('DONE n=' + n + ' buf_left=' + buf.length); break; }
+            n++;
+            const chunk = decoder.decode(value, {stream:true});
+            buf += chunk;
+            addLog('['+n+'] chunk('+value.length+'b) buf='+buf.length);
+            // SSE: parse event by looking for \n\n or \r\n\r\n
+            while (true) {
+                const doubleCr = buf.indexOf('\r\n\r\n');
+                const doubleNl = buf.indexOf('\n\n');
+                const endIdx = doubleCr >= 0 && (doubleNl < 0 || doubleCr < doubleNl)
+                    ? doubleCr + 4 : doubleNl >= 0 ? doubleNl + 2 : -1;
+                if (endIdx < 0) break;
+                const rawEvent = buf.slice(0, endIdx);
+                buf = buf.slice(endIdx);
+                const nlIdx = rawEvent.indexOf('\n');
+                if (nlIdx < 0) continue;
+                const firstLine = rawEvent.slice(0, nlIdx);
+                let eventName = '', eventData = '';
+                if (firstLine.startsWith('event:')) {
+                    eventName = firstLine.slice(5).trim();
+                    const afterEvent = rawEvent.slice(nlIdx + 1);
+                    const dataIdx = afterEvent.indexOf('data:');
+                    if (dataIdx >= 0) eventData = afterEvent.slice(dataIdx + 5);
+                } else if (firstLine.startsWith('data:')) {
+                    eventData = firstLine.slice(5) + rawEvent.slice(nlIdx + 1);
+                }
+                eventData = eventData.replace(/[\r\n]+$/, '').trim();
+                if (!eventData || eventData === '{}') continue;
+                try {
+                    const p = JSON.parse(eventData);
+                    const t = p.type, c = (p.content||'');
+                    if (t === 'text' || t === 'final') {
+                        addLog('  ★ ' + t + ': ' + (c||'').slice(0,100));
+                        totalText += c;
+                    } else {
+                        addLog('  type=' + t + ' keys=' + Object.keys(p).join(','));
+                    }
+                } catch(e) { addLog('  ERR: ' + e.message + ' data:' + eventData.slice(0,80)); }
+            }
+        }
+        addLog('=== 完成 ===');
+        addLog('totalText: ' + (totalText||'EMPTY').slice(0,200));
+    } catch(e) { addLog('ERROR: ' + e.message); }
+}
+</script>
+</body></html>

@@ -1,0 +1,26 @@
+# Environment / secrets
+.env
+.env.*
+config_local.py
+my-settings.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+venv/
+.venv/
+env/
+.env/
+
+# Logs
+*.log
+server.log
+
+# Static / templates (generated)
+static/
+templates/
+
+# macOS
+.DS_Store
