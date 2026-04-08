@@ -57,10 +57,6 @@ MINILOBSTER_API_KEY=sk-cp-xxxxxxxxxxxxxxxxxxxx
 
 服务启动后访问：**http://localhost:8765**
 
-### 5. 使用 QQ 机器人（可选）
-
-如需接入 QQ 机器人，参考 [QQ Bot 接入指南](#qq-bot-接入)。
-
 ## 目录结构
 
 ```
@@ -128,48 +124,6 @@ AVAILABLE_MODELS = [
 | 变量 | 说明 | 必填 |
 |------|------|------|
 | `MINILOBSTER_API_KEY` | MiniMax API Key | 是 |
-
-## QQ Bot 接入
-
-> ⚠️ QQ 机器人需要已发布的 QQ 开放平台应用。
-
-### 1. 获取 QQ Bot 凭证
-
-1. 打开 [QQ 开放平台](https://q.qq.com) → 应用管理
-2. 创建或选择你的机器人应用
-3. 记录 `AppID` 和 `AppSecret`
-
-### 2. 安装 qqbot 依赖
-
-```bash
-pip install websocket-client
-```
-
-### 3. 配置桥接
-
-在 `qq_bridge.py` 中填入凭证：
-
-```python
-QQ_APPID = "YOUR_APP_ID"
-QQ_APPSECRET = "YOUR_APP_SECRET"
-MINI_LOBSTER = "http://127.0.0.1:8765"
-```
-
-### 4. 启动桥接
-
-```bash
-# 先启动主服务
-python server.py
-
-# 新开终端，启动 QQ 桥接
-python qq_bridge.py
-```
-
-### 5. QQ 开放平台配置
-
-在 QQ 开放平台 → 机器人 → **事件配置** 中开通：
-- `C2C_MESSAGE_CREATE`（私信消息）
-- `GROUP_AT_MESSAGE_CREATE`（群 @ 消息）
 
 ## API 接口
 
